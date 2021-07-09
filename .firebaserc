@@ -1,0 +1,14 @@
+{
+  "projects": {
+    "default": "okulprojesi-17031410003"
+  },
+  "targets": {
+    "okulprojesi-17031410003": {
+      "hosting": {
+        "staj-odev": [
+          "okulprojesi-17031410003"
+        ]
+      }
+    }
+  }
+}

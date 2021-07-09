@@ -1,0 +1,139 @@
+<style>
+
+  div {
+    font-family:Cambria;
+  }
+
+  .toolbar{
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    background-color: #3c2b1a;
+    color: rgba(255, 255, 255, 0.80);
+    font-weight: 300;
+  }
+
+  .toolbar img {
+    margin: 0 16px;
+  }
+
+  .title{
+    font-size:20px;
+  }
+
+  .content {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    margin-top: 60px;
+    background-color: #6e5e4b;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .login_area{
+    display: flex;
+    margin: 180px auto;
+    width: 350px;
+    background-color: white;
+    border-radius: 5px;
+    color: black;
+    font-weight: 300;
+    flex-direction: column;
+  }
+
+  .login_title{
+    margin-top: 40px;
+    margin-left: 30px;
+    color: #1f170f;
+    font-weight: 600;
+    font-size: 25px;
+  }
+
+  .login_subtitle{
+    margin-top: 5px;
+    margin-left: 30px;
+    color: #1f170fbb;
+    font-weight: 300;
+    font-size: 13px;
+  }
+
+  label{
+    margin-bottom: 5px;
+    display: block;
+  }
+
+  .username_area{
+    margin: 30px 30px 0px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .password_area{
+    margin: 20px 30px 0px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .inputfield{
+    border-width: 1px;
+    border-color: #3c2b1acc;
+    border-radius: 5px;
+    background-color: #3c2b1a10;
+    padding: 5px;
+    color: #3c2b1a;
+    font-family:Cambria;
+    font-size: 16px;
+    flex-grow: 1;
+  }
+
+  .login_button{
+    margin: 40px 30px 50px;
+    height: 40px;
+    border-radius: 5px;
+    border: none;
+    background-color: #3c2b1a;
+    color: white;
+  }
+
+  
+</style>
+
+<div id="unauthorized_toolbar" class="toolbar">
+  <img
+    width="40"
+    alt="Angular Logo"
+    src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Coffee_cup_icon.svg/1200px-Coffee_cup_icon.svg.png"
+  />
+  <span class="title" >Bi'Sipariş: Sipariş vermenin kolay hali!</span>   
+</div>
+
+<div class="content" role="main">
+
+  <div id="login_area" class="login_area">
+    <span class="login_title">Giriş Yap</span>
+    <span class="login_subtitle">Bi'Sipariş Sistemine hoşgeldiniz!</span>
+    
+    <div class="username_area">
+      <label for="username">Giriş Kodu:</label>
+      <input type="text" id="username" class="inputfield" name="username" required>
+    </div>
+  
+    <div class="password_area">
+      <label for="pass">Şifre:</label>
+      <input type="password" id="pass" class="inputfield" name="password" minlength="4" required>
+    </div>
+
+    <button class="login_button">Giriş Yap</button>
+
+  </div>
+
+</div>
+
+<router-outlet></router-outlet>
