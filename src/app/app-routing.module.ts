@@ -1,11 +1,29 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { MainPageComponent } from './main-page/main-page.component';
+import { AppComponent } from './app.component';
+import { MusterilerComponent } from './musteriler/musteriler.component';
+import { AuthGuard } from './services/auth.guard';
+import { SiparislerComponent } from './siparisler/siparisler.component';
+import { YemeklerComponent } from './yemekler/yemekler.component';
+
 
 const routes: Routes = [
-  {path:"main-page",
-component:MainPageComponent
-}
+  {path:"",
+  component:AppComponent
+  },
+  {path:"musteriler",
+  component:MusterilerComponent,
+  canActivate:[AuthGuard]
+  },
+  {path:"siparisler",
+  component:SiparislerComponent,
+  canActivate:[AuthGuard]
+  },
+  {path:"yemekler",
+  component:YemeklerComponent,
+  canActivate:[AuthGuard]
+  }
+  
 ];
 
 @NgModule({
