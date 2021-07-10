@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { AngularFireAuth } from '@angular/fire/auth';
-import { AngularFirestore, AngularFirestoreDocument } from '@angular/fire/firestore';
+import { AngularFirestore, AngularFirestoreCollectionGroup, AngularFirestoreDocument } from '@angular/fire/firestore';
 import { Router } from '@angular/router';
 import { BehaviorSubject, Observable } from 'rxjs';
 
@@ -9,12 +9,12 @@ import { BehaviorSubject, Observable } from 'rxjs';
   providedIn: 'root'
 })
 export class AuthService {
-  userLoggedIn: boolean;      // other components can check on this variable for the login status of the user
+  userLoggedIn: boolean;      
 
   constructor(private router: Router, private angularFireAuth: AngularFireAuth, private angularFirestore: AngularFirestore) {
       this.userLoggedIn = false;
 
-      this.angularFireAuth.onAuthStateChanged((user) => {              // set up a subscription to always know the login status of the user
+      this.angularFireAuth.onAuthStateChanged((user) => {              
           if (user) {
               this.userLoggedIn = true;
           } else {
@@ -53,7 +53,7 @@ export class AuthService {
                     email_lower: emailLower
             })
             localStorage.setItem('user',JSON.stringify(result.user))
-            //result.user?.sendEmailVerification()                 // immediately send the user a verification email
+            //result.user?.sendEmailVerification()                 
         })
         .catch(error => {
             console.log('Auth Service: signup error', error);
@@ -64,7 +64,7 @@ export class AuthService {
   logoutUser(): Promise<void> {
     return this.angularFireAuth.signOut()
         .then(() => {
-            this.router.navigate(['/home']);                    // when we log the user out, navigate them to home
+            this.router.navigate(['/home']);                    
         })
         .catch(error => {
             console.log('Auth Service: logout error...');
@@ -83,7 +83,9 @@ export class AuthService {
   }
 
   getCurrentUser() {
-    return this.angularFireAuth.currentUser;                                 // returns user object for logged-in users, otherwise returns null 
+    return this.angularFireAuth.currentUser;                                
   }
+
+  
 
 }

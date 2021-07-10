@@ -1,8 +1,60 @@
 <style>
     .content{
-        margin: 60px auto 0;
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        margin-top: 60px;
+        background-color: var(--alt_color);
+        display: flex;
+        flex-direction: column;
     }
+
+    .customer_table{
+        margin: 50px 75px;
+        text-align: left;
+        border-collapse: collapse;
+    }
+    
+    .table_header_item{
+        background-color: var(--bg_color);
+        padding: 15px 20px;
+        width: 275px;
+        font-weight: 300;
+        font-size: 18px;
+        border: 2px solid var(--main_color);
+        
+    }
+
+    .table_item{
+        background-color: var(--alt_color);
+        padding: 10px 15px;
+        font-weight: 300;
+        font-size: 18px;
+        border: 1px solid var(--main_color);
+    }
+
+    
 </style>
+
 <div class="content">
-    <h3>test</h3>
+    <table class="customer_table">
+        <tr class=table_header>
+            <th class="table_header_item" style="width: auto;">Müşteri</th>
+            <th class="table_header_item">Müşteri Kodu</th>
+            <th class="table_header_item">Durum</th>
+            <th class="table_header_item">İşlemler</th>
+        </tr>
+        <tr class="list_item" *ngFor="let customer of customers">
+            <td class="table_item">{{ customer.name }}</td>
+            <td class="table_item">{{ customer.order_code }}</td>
+            <td class="table_item">{{ customer.status }}</td>
+            <td class="table_item">
+                <button *ngIf="!customer.isAllowed" (click)="customerAllow(customer)">Onayla</button>
+                <button *ngIf="!customer.isAllowed" (click)="customerDeny(customer)">Reddet</button>
+                <button *ngIf="customer.isAllowed" (click)="customerEnd(customer)">İşlemi Bitir</button>
+            </td>
+        </tr>
+    </table>
 </div>
