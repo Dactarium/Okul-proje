@@ -156,9 +156,9 @@
     <span class="title" *ngIf="!isSignedIn">Bi'Sipariş: Sipariş vermenin kolay hali!</span> 
 
     <div class="menu" *ngIf="isSignedIn">
-        <button class = "menu_item" routerLink="musteriler" >Müşteriler</button>
-        <button class = "menu_item" routerLink="siparisler" >Siparişler</button>
-        <button class = "menu_item" routerLink="yemekler" >Yemekler</button>
+        <button class = "menu_item" routerLink="musteriler">Müşteriler</button>
+        <button class = "menu_item" routerLink="siparisler">Siparişler</button>
+        <button class = "menu_item" routerLink="yemekler">Menü</button>
     </div>
 
     <button class="logout_button" *ngIf="isSignedIn" (click)="logout()">Logout</button>

@@ -29,10 +29,10 @@ class customer{
   styleUrls: ['./musteriler.component.css']
 })
 export class MusterilerComponent implements OnInit {
-  customerCollection!: AngularFirestoreCollection<customer>;
-  customers_data!: Observable<customer[]>;
+  customerCollection!: AngularFirestoreCollection<customer>
+  customers_data!: Observable<customer[]>
 
-  customers: customer[] = [];
+  customers: customer[] = []
 
   constructor(auth: AuthService, angularFirestore: AngularFirestore) { 
     auth.getCurrentUser().then(result => {
@@ -41,7 +41,7 @@ export class MusterilerComponent implements OnInit {
      this.customers_data.subscribe(datas => {
        this.customers = []
        for(let data of datas){
-          this.customers.push(new customer(data.id, data.name, data.order_code, "Bekliyor", false))
+          this.customers.push(new customer(data.id, data.name, data.order_code, data.status, data.isAllowed))
        }
      })
     })
@@ -50,22 +50,62 @@ export class MusterilerComponent implements OnInit {
   ngOnInit(): void {
   }
 
-  customerAllow(selectedCustomer: customer){
-    selectedCustomer.isAllowed = true;
-    selectedCustomer.status = "Sipariş vermeye hazır";
-  }
-
-  customerDeny(selectedCustomer: customer){
-    const index = this.customers.indexOf(selectedCustomer);
-    if(index > -1)
-      this.customers.splice(index, 1)
+  async customerAllow(selectedCustomer: customer){
+    if(confirm(customer.name + " adlı müşteriyi onaylıyor musunuz?")){
+      const searchedCustomer = await this.customerCollection.ref.where("id", "==" , selectedCustomer.id).get()
+      if(searchedCustomer.empty){
+        console.log("No matching documents.")
+        return
+      }
+      searchedCustomer.forEach( doc => {
+        doc.ref.set({
+          id: selectedCustomer.id,
+          name: selectedCustomer.name,
+          order_code: selectedCustomer.order_code,
+          status: "Sipariş vermeye hazır",
+          isAllowed: true
+        })
+        console.log("Müşteri onay işlemi başarıyla gerçekleşti!")
+      })
+    }else{
+      console.log("Müşteri onay işlemi tarafınızca reddedildi!")
+    }
+    
     
   }
 
-  customerEnd(selectedCustomer: customer){
-    const index = this.customers.indexOf(selectedCustomer);
-    if(index > -1)
-      this.customers.splice(index, 1)
+  async customerDeny(selectedCustomer: customer){
+    if(confirm(selectedCustomer.name + " adlı müşteriyi reddediyor musunuz?")){
+      const searchedCustomer = await this.customerCollection.ref.where("id", "==" , selectedCustomer.id).get()
+      if(searchedCustomer.empty){
+        console.error("No matching documents.")
+        return
+      }
+      searchedCustomer.forEach( doc => {
+        doc.ref.delete();
+        console.log("Müşteri red işlemi başarıyla gerçekleşti!")
+      })
+    }else{
+      console.log("Müşteri red işlemi tarafınızca reddedildi!")
+    }
+    
+  }
+
+  async customerEnd(selectedCustomer: customer){
+    if(confirm(selectedCustomer.name + " adlı müşterin işlemini sonlandırıyor musunuz?")){
+      const searchedCustomer = await this.customerCollection.ref.where("id", "==" , selectedCustomer.id).get()
+      if(searchedCustomer.empty){
+        console.error("No matching documents.")
+        return
+      }
+      searchedCustomer.forEach( doc => {
+        doc.ref.delete();
+        console.log("Müşteri işlemleri başarıyla bitirildi!")
+      })
+    }else{
+      console.log("Müşteri bitirme işlemi tarafınızca reddedildi!")
+    }
+    
   }
 
 }
