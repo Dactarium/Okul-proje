@@ -1,18 +1,17 @@
 import { Component, OnInit } from '@angular/core';
-import { AngularFirestore, AngularFirestoreCollection } from '@angular/fire/firestore';
+import { AngularFireAuth } from '@angular/fire/auth';
+import { AngularFirestore, AngularFirestoreCollection, AngularFirestoreCollectionGroup, AngularFirestoreDocument } from '@angular/fire/firestore';
 import { Observable } from 'rxjs';
 import { AuthService } from '../services/auth.service';
 
-class menu_item{
+interface menuType{
+  name: string
+}
+
+interface menu_item{
   name: string
   type: string
   price: number
-
-  constructor(name: string, type: string, price: number){
-    this.name = name
-    this.type = type
-    this.price = price
-  }
 }
 
 @Component({
@@ -22,27 +21,68 @@ class menu_item{
 })
 export class YemeklerComponent implements OnInit {
   menuCollection!: AngularFirestoreCollection<menu_item>
-  menu_data!: Observable<menu_item[]>
+  menuTypeCollection!: AngularFirestoreCollection<menuType>
   menu: menu_item[] = []
-
+  menu_types: menuType[] = []
+  
   constructor(auth: AuthService, angularFirestore: AngularFirestore) { 
     auth.getCurrentUser().then(result => {
-     this.menuCollection = angularFirestore.collection("users").doc(result?.email?.toLowerCase()).collection("menu")
-     this.menu_data = this.menuCollection.valueChanges()
-     this.menu_data.subscribe(datas => {
-       this.menu = []
-       for(let data of datas){
-          this.menu.push(new menu_item(data.name, data.type, data.price))
-       }
-       this.menu.sort((a, b) => a.type.localeCompare(b.type))
-     })
+      const userCollection = angularFirestore.collection("users").doc(result?.email?.toLowerCase())
+      this.menuCollection = userCollection.collection("menu")
+      this.menuTypeCollection = userCollection.collection("menu_type")
+
+      this.menuCollection.valueChanges().subscribe(datas => {
+        this.menu = []
+        for(let data of datas){
+            this.menu.push(data)
+        }
+        this.menu.sort((a, b) => a.type.localeCompare(b.type))
+      })
+
+      this.menuTypeCollection.valueChanges().subscribe(datas => {
+        this.menu_types = []
+        for(let data of datas){
+          this.menu_types.push(data)
+      }
+      this.menu_types.sort((a, b) => a.name.localeCompare(b.name))
+      })
+    
     })
   }
 
   ngOnInit(): void {
   }
 
-  async addUpdateMenu(input_name: string, input_type:string, input_price_text:string){
+  async addRemoveType(input_type: string, operation: boolean){
+    if(operation){
+      const snapshot = await this.menuTypeCollection.ref.where("name","==",input_type).get();
+      if(snapshot.empty){
+        if(confirm(input_type + " isimli menü tipini eklemek istiyor musunuz?")){
+          this.menuTypeCollection.add({
+            name: input_type
+          })
+        }
+      }
+    }else{
+      if(confirm(input_type + " adlı menü tipini silmek istiyor musunuz?")){
+        const searchedCustomer = await this.menuTypeCollection.ref.where("name", "==" , input_type).get()
+        if(searchedCustomer.empty){
+          console.error("No matching documents.")
+          return
+        }
+        searchedCustomer.forEach( doc => {
+          doc.ref.delete();
+          console.log("Menu silme işlemi başarıyla gerçekleşti!")
+        })
+      }else{
+        console.log("Menu silme işlemi tarafınızca reddedildi!")
+      }
+
+    }
+  }
+
+  async addUpdateMenu(input_name: string, input_type: any, input_price_text:string){
+    console.log(input_type)
     if(input_name == "" || input_type == "" || input_price_text == ""){
       alert("Lütfen tüm alanları doldurunuz")
     }else{

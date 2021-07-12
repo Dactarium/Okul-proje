@@ -12,6 +12,22 @@
     }
 
     input{
+        max-width: 300px;
+        min-width: 100px;
+        border-width: 1px;
+        border-color: var(--main_color);
+        border-radius: 5px;
+        background-color: var(--input_bg_color);
+        margin-right: 25px;
+        padding: 10px;
+        color: #3c2b1a;
+        font-family:Cambria;
+        font-size: 16px;
+    }
+
+    select, option{
+        max-width: 300px;
+        min-width: 100px;
         border-width: 1px;
         border-color: var(--main_color);
         border-radius: 5px;
@@ -34,15 +50,11 @@
     }
 
     .content{
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        margin-top: 60px;
+        margin: 60px 0;
         background-color: var(--alt_color);
         display: flex;
         flex-direction: column;
+        flex-grow: 1;
     }
 
     .title_area{
@@ -65,7 +77,7 @@
 
     .update_area{
         display: flex;
-        margin: 30px 75px 75px;
+        margin: 30px auto 75px 75px;
         align-items: center;
     }
 
@@ -104,7 +116,20 @@
 
     <div class="title_area" style="margin-top: 50px">
         <hr class="left_line">
-        <span class="title"> Ekle / Güncelle </span>
+        <span class="title">Tip Ekle / Sil </span>
+        <hr class="right_line">
+    </div>
+
+    <div class="update_area">
+        <span class="update_input_title">Tip:</span>
+        <input type="text" name="type" #type required> 
+        <button (click)="addRemoveType(type.value, true)">Ekle</button>
+        <button (click)="addRemoveType(type.value, false)">Sil</button>
+    </div>
+
+    <div class="title_area">
+        <hr class="left_line">
+        <span class="title">Menü Ekle / Güncelle </span>
         <hr class="right_line">
     </div>
 
@@ -112,10 +137,12 @@
         <span class="update_input_title">Menü İsmi:</span>
         <input type="text" name="name" #name required>
         <span class="update_input_title">Tip:</span>
-        <input type="text" name="type" #type required>
+        <select #type_select>
+            <option *ngFor="let type of menu_types" ngValue="type">{{ type.name }}</option>
+        </select>
         <span class="update_input_title">Fiyat:</span>
         <input type="number" name="price" step="0.01" #price required> 
-        <button (click)="addUpdateMenu(name.value, type.value, price.value)">Ekle / Güncelle</button>
+        <button (click)="addUpdateMenu(name.value, type_select.value , price.value)">Ekle / Güncelle</button>
     </div>
 
     <div class="title_area">

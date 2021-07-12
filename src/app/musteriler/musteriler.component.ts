@@ -51,7 +51,7 @@ export class MusterilerComponent implements OnInit {
   }
 
   async customerAllow(selectedCustomer: customer){
-    if(confirm(customer.name + " adlı müşteriyi onaylıyor musunuz?")){
+    if(confirm(selectedCustomer.name + " adlı müşteriyi onaylıyor musunuz?")){
       const searchedCustomer = await this.customerCollection.ref.where("id", "==" , selectedCustomer.id).get()
       if(searchedCustomer.empty){
         console.log("No matching documents.")
