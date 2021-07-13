@@ -124,27 +124,30 @@
 
     <div class="update_area">
         <span class="update_input_title">Tip:</span>
-        <input type="text" name="type" #type required>
-        <button (click)="addRemoveType(type.value, true)">Ekle</button>
-        <button (click)="addRemoveType(type.value, false)">Sil</button>
+        <input id="addTypeInput"type="text" name="type" required>
+        <button (click)="addType()">Ekle</button>
+        <select id="type_remove_select">
+            <option *ngFor="let type of menu_types" [value]="type.name">{{ type.name }}</option>
+        </select>
+        <button (click)="removeType()">Sil</button>
     </div>
 
     <div class="title_area">
         <hr class="left_line">
-        <span class="title">Menü Ekle / Güncelle </span>
+        <span class="title">Menü Ekle </span>
         <hr class="right_line">
     </div>
 
     <div class="update_area">
         <span class="update_input_title">Menü İsmi:</span>
-        <input type="text" name="name" #name required>
+        <input id="addMenuNameInput" type="text" name="name" required>
         <span class="update_input_title">Tip:</span>
-        <select #type_select>
-            <option *ngFor="let type of menu_types" ngValue="type">{{ type.name }}</option>
+        <select id="addMenuSelect">
+            <option *ngFor="let type of menu_types" [value]="type.name">{{ type.name }}</option>
         </select>
         <span class="update_input_title">Fiyat:</span>
-        <input type="number" name="price" step="0.01" #price required>
-        <button (click)="addUpdateMenu(name.value, type_select.value , price.value)">Ekle</button>
+        <input id="addMenuPriceInput"type="number" name="price" step="0.01" #price required>
+        <button (click)="addMenu()">Ekle</button>
     </div>
 
     <div class="title_area">
@@ -162,9 +165,21 @@
         </tr>
         <tr class="list_item" *ngFor="let menu_item of menu">
             <td class="table_item">{{ menu_item.name }}</td>
-            <td class="table_item">{{ menu_item.type }}</td>
-            <td class="table_item">{{ menu_item.price }} TL</td>
             <td class="table_item">
+                <span *ngIf="!menu_item.isEdit">{{ menu_item.type }}</span>
+                <select [id]='menu_item.name + "_type"' *ngIf="menu_item.isEdit">
+                    <option *ngFor="let type of menu_types" [value]="type.name" [selected]="menu_item.type == type.name">{{ type.name }}</option>
+                </select>
+            </td>
+            <td class="table_item">
+                <span *ngIf="!menu_item.isEdit">{{ menu_item.price }} TL</span>
+                <span *ngIf="menu_item.isEdit">
+                    <input [id]='menu_item.name + "_price"' type="number" step="0.01" [value]="menu_item.price" required> 
+                </span>
+            </td>
+            <td class="table_item">
+                <button *ngIf="!menu_item.isEdit" (click)="menu_item.isEdit = true">Düzenle</button>
+                <button *ngIf="menu_item.isEdit" (click)="editMenu(menu_item); menu_item.isEdit = false">Kaydet</button>
                 <button (click)="removeMenu(menu_item)">Sil</button>
             </td>
         </tr>

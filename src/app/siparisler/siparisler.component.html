@@ -77,7 +77,7 @@
             <td class="table_item">
                 <button (click)="routeTo('musteri_siparisler')">Siparişi Görüntüle</button>
                 <button *ngIf="!order.isNoteEdit" (click)="order.isNoteEdit=true">Not Ekle</button>
-                <button *ngIf="order.isNoteEdit" (click)="saveNote(order.id); order.isNoteEdit=false">Notu Kaydet</button>
+                <button *ngIf="order.isNoteEdit" (click)="editNote(order.id); order.isNoteEdit=false">Notu Kaydet</button>
                 <button>İşlemi Bitir</button>
             </td>
         </tr>

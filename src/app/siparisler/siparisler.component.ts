@@ -3,6 +3,8 @@ import { Component, OnInit } from '@angular/core';
 import { AngularFirestore, AngularFirestoreCollection, AngularFirestoreDocument, AngularFirestoreModule, CollectionReference, DocumentReference, QuerySnapshot } from '@angular/fire/firestore';
 import { Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
+import { distinctUntilChanged, first } from 'rxjs/operators';
+import { isEqual } from 'lodash';
 
 interface menu {
   name: string
@@ -61,11 +63,11 @@ export class SiparislerComponent implements OnInit {
       const userCollection = angularFirestore.collection("users").doc(result?.email?.toLowerCase())
       this.ordersCollection = userCollection.collection("orders")
 
-      this.ordersCollection.valueChanges().subscribe(async docs => {
+      this.ordersCollection.valueChanges().pipe(distinctUntilChanged((prev, curr) => isEqual(prev, curr))).subscribe(async docs => {
         if (!docs)
           return;
         console.log(this.orders, docs)
-        this.orders = []
+        var tmp_orders: order_info[] = []
         for (let doc of docs) {
           var customer_name: string = ""
           var customer_status: string = ""
@@ -93,9 +95,7 @@ export class SiparislerComponent implements OnInit {
                 total = total + subtotal
               }
             }
-            const order_total = this.orders.find(function (item) {
-              return item.id == doc.id
-            })
+            const order_total = this.orders.find(item => item.id == doc.id)
             if (order_total) order_total.total = total
           })
 
@@ -105,8 +105,9 @@ export class SiparislerComponent implements OnInit {
               hasCurrentOrder = true
           })
 
-          this.orders.push(new order_info(doc.id, customer_name, customer_status, note, total, true))
+          tmp_orders.push(new order_info(doc.id, customer_name, customer_status, note, total, true))
         }
+        this.orders = tmp_orders
       })
 
     })
@@ -116,8 +117,7 @@ export class SiparislerComponent implements OnInit {
 
   }
 
-  async saveNote(id: string) {
-    
+  async editNote(id: string) {
     await this.ordersCollection.doc(id).update({
       note: (<HTMLInputElement>document.getElementById(id)).value
     })

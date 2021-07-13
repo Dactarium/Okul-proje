@@ -24,7 +24,7 @@ export class AppComponent implements OnInit{
   ngOnInit(){
     if(localStorage.getItem('user') !== null){
       this.isSignedIn = true
-      this.router.navigate(['siparisler'])
+      this.router.navigate(['yemekler'])
     }
     else
     this.isSignedIn = false
