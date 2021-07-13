@@ -1,1 +1,85 @@
-<p>siparisler works!</p>
+<style>
+    button {
+        background-color: var(--button_color);
+        color: var(--main_color);
+        border-color: var(--main_color);
+        border-radius: 5px;
+        margin: 5px 10px;
+        padding: 10px;
+        font-weight: 600;
+    }
+
+    input {
+        border-width: 1px;
+        border-color: var(--main_color);
+        border-radius: 5px;
+        background-color: var(--input_bg_color);
+        margin-right: 25px;
+        padding: 10px;
+        color: #3c2b1a;
+        font-family: Cambria;
+        font-size: 16px;
+        flex-grow: 1;
+    }
+
+    .content {
+        margin: 60px 0;
+        background-color: var(--alt_color);
+        display: flex;
+        flex-direction: column;
+    }
+
+    .customer_table {
+        margin: 50px 75px;
+        text-align: left;
+        border-collapse: collapse;
+    }
+
+    .table_header_item {
+        background-color: var(--main_color);
+        color: var(--alt_color);
+        padding: 15px 20px;
+        width: 275px;
+        font-weight: 300;
+        font-size: 18px;
+        border: 2px solid black;
+
+    }
+
+    .table_item {
+        background-color: var(--main_color_50);
+        padding: 10px 15px;
+        font-weight: 300;
+        font-size: 18px;
+        border: 1px solid var(--main_color);
+    }
+</style>
+
+<div class="content">
+    <table class="customer_table">
+        <tr class=table_header>
+            <th class="table_header_item">Müşteri</th>
+            <th class="table_header_item">Durum</th>
+            <th class="table_header_item">Not</th>
+            <th class="table_header_item">Toplam tutar</th>
+            <th class="table_header_item" style="width: auto;">İşlemler</th>
+        </tr>
+        <tr class="list_item" *ngFor="let order of orders">
+            <td class="table_item">{{ order.customer_name }}</td>
+            <td class="table_item">{{ order.customer_status }}</td>
+            <td class="table_item">
+                <span *ngIf="!order.isNoteEdit">{{ order.note }}</span>
+                <span *ngIf="order.isNoteEdit">
+                    <input [id]="order.id" type="text" [value]="order.note">
+                </span>
+            </td>
+            <td class="table_item">{{ order.total }} TL</td>
+            <td class="table_item">
+                <button (click)="routeTo('musteri_siparisler')">Siparişi Görüntüle</button>
+                <button *ngIf="!order.isNoteEdit" (click)="order.isNoteEdit=true">Not Ekle</button>
+                <button *ngIf="order.isNoteEdit" (click)="saveNote(order.id); order.isNoteEdit=false">Notu Kaydet</button>
+                <button>İşlemi Bitir</button>
+            </td>
+        </tr>
+    </table>
+</div>

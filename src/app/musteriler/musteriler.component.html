@@ -1,6 +1,5 @@
 <style>
-
-    button{
+    button {
         background-color: var(--button_color);
         color: var(--main_color);
         border-color: var(--main_color);
@@ -10,20 +9,20 @@
         font-weight: 600;
     }
 
-    .content{
+    .content {
         margin: 60px 0;
         background-color: var(--alt_color);
         display: flex;
         flex-direction: column;
     }
 
-    .customer_table{
+    .customer_table {
         margin: 50px 75px;
         text-align: left;
         border-collapse: collapse;
     }
-    
-    .table_header_item{
+
+    .table_header_item {
         background-color: var(--main_color);
         color: var(--alt_color);
         padding: 15px 20px;
@@ -31,18 +30,16 @@
         font-weight: 300;
         font-size: 18px;
         border: 2px solid black;
-        
+
     }
 
-    .table_item{
+    .table_item {
         background-color: var(--main_color_50);
         padding: 10px 15px;
         font-weight: 300;
         font-size: 18px;
         border: 1px solid var(--main_color);
     }
-
-    
 </style>
 
 <div class="content">
@@ -60,7 +57,7 @@
             <td class="table_item">
                 <button *ngIf="!customer.isAllowed" (click)="customerAllow(customer)">Onayla</button>
                 <button *ngIf="!customer.isAllowed" (click)="customerDeny(customer)">Reddet</button>
-                <button *ngIf="customer.isAllowed" (click)="customerEnd(customer)">İşlemi Bitir</button>
+                <button *ngIf="customer.isAllowed">İşlemi Bitir</button>
             </td>
         </tr>
     </table>

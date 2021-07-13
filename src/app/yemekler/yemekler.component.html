@@ -1,5 +1,5 @@
 <style>
-    button{
+    button {
         background-color: var(--button_color);
         color: var(--main_color);
         border-color: var(--main_color);
@@ -8,10 +8,10 @@
         margin: 0 25px 0 0;
         padding: 10px;
         font-weight: 600;
-        font-family:Cambria;
+        font-family: Cambria;
     }
 
-    input{
+    input {
         max-width: 300px;
         min-width: 100px;
         border-width: 1px;
@@ -21,11 +21,12 @@
         margin-right: 25px;
         padding: 10px;
         color: #3c2b1a;
-        font-family:Cambria;
+        font-family: Cambria;
         font-size: 16px;
     }
 
-    select, option{
+    select,
+    option {
         max-width: 300px;
         min-width: 100px;
         border-width: 1px;
@@ -35,21 +36,22 @@
         margin-right: 25px;
         padding: 10px;
         color: #3c2b1a;
-        font-family:Cambria;
+        font-family: Cambria;
         font-size: 16px;
         flex-grow: 1;
     }
-    
-    hr{
+
+    hr {
         border-color: var(--main_color);
         background-color: var(--main_color);
     }
-    
-    th, td{
-        font-family:Cambria;
+
+    th,
+    td {
+        font-family: Cambria;
     }
 
-    .content{
+    .content {
         margin: 60px 0;
         background-color: var(--alt_color);
         display: flex;
@@ -57,43 +59,43 @@
         flex-grow: 1;
     }
 
-    .title_area{
+    .title_area {
         display: flex;
         font-weight: 600;
         font-size: 20px;
     }
-    
-    .left_line{
+
+    .left_line {
         margin-left: 75px;
         margin-right: 5px;
         width: 50px;
     }
 
-    .right_line{
+    .right_line {
         flex-grow: 1;
         margin-left: 5px;
         margin-right: 75px;
     }
 
-    .update_area{
+    .update_area {
         display: flex;
         margin: 30px auto 75px 75px;
         align-items: center;
     }
 
-    .update_input_title{
+    .update_input_title {
         font-weight: 450;
-        font-family:Cambria;
+        font-family: Cambria;
         margin-right: 15px;
     }
 
-    .menu_table{
+    .menu_table {
         margin: 30px 75px 0px;
         text-align: left;
         border-collapse: collapse;
     }
-    
-    .table_header_item{
+
+    .table_header_item {
         background-color: var(--main_color);
         color: var(--alt_color);
         padding: 15px 20px;
@@ -103,7 +105,7 @@
         border: 2px solid black;
     }
 
-    .table_item{
+    .table_item {
         background-color: var(--main_color_50);
         padding: 10px 15px;
         font-weight: 300;
@@ -122,7 +124,7 @@
 
     <div class="update_area">
         <span class="update_input_title">Tip:</span>
-        <input type="text" name="type" #type required> 
+        <input type="text" name="type" #type required>
         <button (click)="addRemoveType(type.value, true)">Ekle</button>
         <button (click)="addRemoveType(type.value, false)">Sil</button>
     </div>
@@ -141,8 +143,8 @@
             <option *ngFor="let type of menu_types" ngValue="type">{{ type.name }}</option>
         </select>
         <span class="update_input_title">Fiyat:</span>
-        <input type="number" name="price" step="0.01" #price required> 
-        <button (click)="addUpdateMenu(name.value, type_select.value , price.value)">Ekle / Güncelle</button>
+        <input type="number" name="price" step="0.01" #price required>
+        <button (click)="addUpdateMenu(name.value, type_select.value , price.value)">Ekle</button>
     </div>
 
     <div class="title_area">
@@ -150,7 +152,7 @@
         <span class="title"> Menü </span>
         <hr class="right_line">
     </div>
-    
+
     <table class="menu_table">
         <tr class=table_header>
             <th class="table_header_item" style="width: auto;">İsim</th>

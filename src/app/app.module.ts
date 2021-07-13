@@ -11,13 +11,15 @@ import { MusterilerComponent } from './musteriler/musteriler.component';
 import { SiparislerComponent } from './siparisler/siparisler.component';
 import { YemeklerComponent } from './yemekler/yemekler.component';
 import { AuthService } from './services/auth.service';
+import { MusteriSiparislerComponent } from './musteri-siparisler/musteri-siparisler.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     MusterilerComponent,
     SiparislerComponent,
-    YemeklerComponent
+    YemeklerComponent,
+    MusteriSiparislerComponent
   ],
   imports: [
     BrowserModule,

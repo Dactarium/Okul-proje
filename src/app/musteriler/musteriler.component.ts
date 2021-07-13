@@ -4,23 +4,12 @@ import { AngularFirestore, AngularFirestoreCollection, AngularFirestoreCollectio
 import { Observable } from 'rxjs';
 import { AuthService } from '../services/auth.service';
 
-
-
-class customer{
+interface customer {
   id: string;
   name: string;
   order_code: string;
   status: string;
   isAllowed: boolean;
-
-  constructor(id:string, name: string,order_code: string, status: string, isAllowed: boolean){
-    this.id = id;
-    this.name = name;
-    this.order_code = order_code;
-    this.status = status;
-    this.isAllowed = isAllowed;
-  }
-
 }
 
 @Component({
@@ -34,78 +23,62 @@ export class MusterilerComponent implements OnInit {
 
   customers: customer[] = []
 
-  constructor(auth: AuthService, angularFirestore: AngularFirestore) { 
+  constructor(auth: AuthService, angularFirestore: AngularFirestore) {
     auth.getCurrentUser().then(result => {
-     this.customerCollection = angularFirestore.collection("users").doc(result?.email?.toLowerCase()).collection("customers")
-     this.customers_data = this.customerCollection.valueChanges()
-     this.customers_data.subscribe(datas => {
-       this.customers = []
-       for(let data of datas){
-          this.customers.push(new customer(data.id, data.name, data.order_code, data.status, data.isAllowed))
-       }
-     })
+      this.customerCollection = angularFirestore.collection("users").doc(result?.email?.toLowerCase()).collection("customers")
+      this.customers_data = this.customerCollection.valueChanges()
+      this.customers_data.subscribe(datas => {
+        this.customers = []
+        for (let data of datas) {
+          this.customers.push(data)
+        }
+      })
     })
   }
 
   ngOnInit(): void {
   }
 
-  async customerAllow(selectedCustomer: customer){
-    if(confirm(selectedCustomer.name + " adlı müşteriyi onaylıyor musunuz?")){
-      const searchedCustomer = await this.customerCollection.ref.where("id", "==" , selectedCustomer.id).get()
-      if(searchedCustomer.empty){
+  async customerAllow(selectedCustomer: customer) {
+    if (confirm(selectedCustomer.name + " adlı müşteriyi onaylıyor musunuz?")) {
+      const searchedCustomer = await this.customerCollection.ref.where("id", "==", selectedCustomer.id).get()
+      if (searchedCustomer.empty) {
         console.log("No matching documents.")
         return
       }
-      searchedCustomer.forEach( doc => {
+      searchedCustomer.forEach(doc => {
         doc.ref.set({
           id: selectedCustomer.id,
           name: selectedCustomer.name,
           order_code: selectedCustomer.order_code,
-          status: "Sipariş vermeye hazır",
+          status: "Aktif",
           isAllowed: true
         })
         console.log("Müşteri onay işlemi başarıyla gerçekleşti!")
       })
-    }else{
+    } else {
       console.log("Müşteri onay işlemi tarafınızca reddedildi!")
     }
-    
-    
+
+
   }
 
-  async customerDeny(selectedCustomer: customer){
-    if(confirm(selectedCustomer.name + " adlı müşteriyi reddediyor musunuz?")){
-      const searchedCustomer = await this.customerCollection.ref.where("id", "==" , selectedCustomer.id).get()
-      if(searchedCustomer.empty){
+  async customerDeny(selectedCustomer: customer) {
+    if (confirm(selectedCustomer.name + " adlı müşteriyi reddediyor musunuz?")) {
+      const searchedCustomer = await this.customerCollection.ref.where("id", "==", selectedCustomer.id).get()
+      if (searchedCustomer.empty) {
         console.error("No matching documents.")
         return
       }
-      searchedCustomer.forEach( doc => {
+      searchedCustomer.forEach(doc => {
         doc.ref.delete();
         console.log("Müşteri red işlemi başarıyla gerçekleşti!")
       })
-    }else{
+    } else {
       console.log("Müşteri red işlemi tarafınızca reddedildi!")
     }
-    
+
   }
 
-  async customerEnd(selectedCustomer: customer){
-    if(confirm(selectedCustomer.name + " adlı müşterin işlemini sonlandırıyor musunuz?")){
-      const searchedCustomer = await this.customerCollection.ref.where("id", "==" , selectedCustomer.id).get()
-      if(searchedCustomer.empty){
-        console.error("No matching documents.")
-        return
-      }
-      searchedCustomer.forEach( doc => {
-        doc.ref.delete();
-        console.log("Müşteri işlemleri başarıyla bitirildi!")
-      })
-    }else{
-      console.log("Müşteri bitirme işlemi tarafınızca reddedildi!")
-    }
-    
-  }
 
 }
