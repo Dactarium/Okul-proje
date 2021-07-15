@@ -66,7 +66,6 @@ export class SiparislerComponent implements OnInit {
       this.ordersCollection.valueChanges().pipe(distinctUntilChanged((prev, curr) => isEqual(prev, curr))).subscribe(async docs => {
         if (!docs)
           return;
-        console.log(this.orders, docs)
         var tmp_orders: order_info[] = []
         for (let doc of docs) {
           var customer_name: string = ""
@@ -123,8 +122,13 @@ export class SiparislerComponent implements OnInit {
     })
   }
 
-  routeTo(path: string) {
-    this.router.navigate([path])
+  endCustomerOrder(id: string){
+    if(confirm("Müşterinin işlemini bitirmek istediğinize emin misiniz?"))
+      this.ordersCollection.doc(id).delete()
+  }
+
+  routeTo(path: string, id: string) {
+    this.router.navigate([path, id])
   }
 
 

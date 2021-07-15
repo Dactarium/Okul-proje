@@ -29,7 +29,7 @@ const routes: Routes = [
     canActivate: [AuthGuard]
   },
   {
-    path: "musteri_siparisler",
+    path: "musteri_siparisler/:id",
     component: MusteriSiparislerComponent,
     canActivate: [AuthGuard]
   }

@@ -1,1 +1,121 @@
-<p>musteri-siparisler works!</p>
+<style>
+    button {
+        background-color: var(--button_color);
+        color: var(--main_color);
+        border-color: var(--main_color);
+        border-radius: 5px;
+        margin: 5px 10px;
+        padding: 10px;
+        font-weight: 600;
+    }
+
+    hr {
+        border-color: var(--main_color);
+        background-color: var(--main_color);
+    }
+
+    th,
+    td {
+        font-family: Cambria;
+    }
+
+    .content {
+        margin: 60px 0;
+        background-color: var(--alt_color);
+        display: flex;
+        flex-direction: column;
+    }
+
+    .title_area {
+        display: flex;
+        font-weight: 600;
+        font-size: 20px;
+    }
+
+    .left_line {
+        margin-left: 75px;
+        margin-right: 5px;
+        width: 50px;
+    }
+
+    .right_line {
+        flex-grow: 1;
+        margin-left: 5px;
+        margin-right: 75px;
+    }
+
+    .order_table {
+        margin: 50px 75px;
+        text-align: left;
+        border-collapse: collapse;
+    }
+
+    .table_header_item {
+        background-color: var(--main_color);
+        color: var(--alt_color);
+        padding: 15px 20px;
+        width: 275px;
+        font-weight: 300;
+        font-size: 18px;
+        border: 2px solid black;
+
+    }
+
+    .table_item {
+        background-color: var(--main_color_50);
+        padding: 10px 15px;
+        font-weight: 300;
+        font-size: 18px;
+        border: 1px solid var(--main_color);
+    }
+</style>
+<div class="content">
+
+    <div class="title_area" style="margin-top: 50px">
+        <hr class="left_line">
+        <span class="title">Yeni Siparişler</span>
+        <hr class="right_line">
+    </div>
+
+    <table class="order_table">
+        <tr class=table_header>
+            <th class="table_header_item" style="width: auto;">Menü İsmi</th>
+            <th class="table_header_item">Sipariş Adeti</th>
+            <th class="table_header_item">İşlemler</th>
+        </tr>
+        <tr class="list_item" *ngFor="let order of current_orders">
+            <td class="table_item">{{ order.name }}</td>
+            <td class="table_item">{{ order.amount }}</td>
+            <td class="table_item">
+                <button (click)="menuServed(order.id)">Servis edildi</button>
+                <button (click)="removeCurrentOrder(order.id)">İptal</button>
+            </td>
+        </tr>
+    </table>
+
+    <div class="title_area">
+        <hr class="left_line">
+        <span class="title">Siparişler</span>
+        <hr class="right_line">
+    </div>
+
+    <table class="order_table">
+        <tr>
+            <th></th>
+            <th></th>
+            <th class="table_header_item" style="background-color: var(--button_color); color: var(--main_color)">Toplam
+                Tutar: {{ total }} TL</th>
+        </tr>
+        <tr class=table_header>
+            <th class="table_header_item" style="width: auto;">Menü İsmi</th>
+            <th class="table_header_item">Sipariş Adeti</th>
+            <th class="table_header_item">Tutar</th>
+        </tr>
+        <tr class="list_item" *ngFor="let order of orders">
+            <td class="table_item">{{ order.name }}</td>
+            <td class="table_item">{{ order.amount }}</td>
+            <td class="table_item">{{ order.total_price }} TL</td>
+        </tr>
+    </table>
+
+</div>

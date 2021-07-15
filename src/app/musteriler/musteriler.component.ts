@@ -30,7 +30,8 @@ export class MusterilerComponent implements OnInit {
       this.customers_data.subscribe(datas => {
         this.customers = []
         for (let data of datas) {
-          this.customers.push(data)
+          if(!data.isAllowed)
+            this.customers.push(data)
         }
       })
     })
