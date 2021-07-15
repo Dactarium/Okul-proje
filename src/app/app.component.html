@@ -153,7 +153,8 @@
       alt="Logo"
       src="../assets/images/Logo.png"
     />
-    <span class="title" *ngIf="!isSignedIn">Bi'Sipariş: Sipariş vermenin kolay hali!</span> 
+    <span class="title" *ngIf="!isSignedIn">Bi'Sipariş: Sipariş vermenin kolay hali!</span>
+    <span class="title" *ngIf="isSignedIn">#{{ user_code }}</span>  
 
     <div class="menu" *ngIf="isSignedIn">
         <button class = "menu_item" routerLink="musteriler">Müşteriler</button>
