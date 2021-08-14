@@ -43,35 +43,28 @@ export class MusteriSiparislerComponent implements OnInit {
       this.billCollection = angularFirestore.collection("restaurants").doc(result?.email!).collection("customers").doc(this.customer_id).collection("bill")
 
       this.ordersCollection.valueChanges().subscribe( orderDocuments => {
-       let tmp_orders: Order_info[] = []
+        let tmp_orders: Order_info[] = []
 
-       for(let orderDocument of orderDocuments){
-        let total: number = orderDocument.amount * orderDocument.price
-        tmp_orders.push(new Order_info(orderDocument.name, orderDocument.amount, total))
-       }
-
-       this.orders = tmp_orders
-      })
-      
-
-      /*
-      this.orderCollection.valueChanges().subscribe(async order_array => {
-        var tmp_orders: order_info[] = []
-        var tmp_total: number = 0
-        for (let order of order_array) {
-          const menu_ref = await order.menu_ref.get()
-          if (!menu_ref.exists) {
-            console.log('No menu ref')
-          } else {
-            const subtotal = order.amount * menu_ref.data()?.price!
-            const order_info: order_info = {id: "", name: menu_ref.data()?.name!, amount: order.amount, total_price: subtotal}
-            tmp_orders.push(order_info)
-            tmp_total += subtotal
-          }
+        for(let orderDocument of orderDocuments){
+          let total: number = orderDocument.amount * orderDocument.price
+          tmp_orders.push(new Order_info(orderDocument.name, orderDocument.amount, total))
         }
+
         this.orders = tmp_orders
-        this.total = tmp_total
-      })*/
+      })
+
+      this.billCollection.valueChanges().subscribe( orderDocuments => {
+        let tmp_bill: Order_info[] = []
+        let total: number = 0
+        for(let orderDocument of orderDocuments){
+          let subtotal = orderDocument.amount * orderDocument.price
+          tmp_bill.push(new Order_info(orderDocument.name, orderDocument.amount, subtotal))
+          total += subtotal
+         }
+         this.total = total
+         this.bill = tmp_bill
+      })
+
     })
 
   }
@@ -81,25 +74,50 @@ export class MusteriSiparislerComponent implements OnInit {
 
   }
 
-  async menuServed(){
-    /*const current_order_ref = this.current_orderCollection.doc(id).ref
-    const newOrder = await current_order_ref.get()
-    if(!newOrder.exists)
-      console.log('No Current Order Document')
-    else{
-      const orderSnapshot = await this.orderCollection.ref.where("menu_ref", "==", newOrder.data()?.menu_ref!).get()
-      if(orderSnapshot.empty)
-        this.orderCollection.add({menu_ref: newOrder.data()?.menu_ref!, amount: newOrder.data()?.amount!})
-      else{
-        orderSnapshot.forEach(doc => this.orderCollection.doc(doc.id).update({amount: (doc.data().amount + newOrder.data()?.amount!)}))
+  async menuServed(name: string){
+
+    const orderSnapshot = await this.ordersCollection.ref.where("name", "==", name).get()
+
+    if(orderSnapshot.empty)
+      return
+
+    orderSnapshot.forEach(async orderDocument => {
+
+      const billSnapshot = await this.billCollection.ref.where("name", "==", name).get()
+
+      if(billSnapshot.empty){
+        this.billCollection.doc().set({
+          name: orderDocument.data().name,
+          amount: orderDocument.data().amount,
+          price: orderDocument.data().price
+        })
+      }else{
+        
+        billSnapshot.forEach( billDocument => {
+          let newAmount = billDocument.data().amount + orderDocument.data().amount
+          billDocument.ref.update({
+            amount: newAmount
+          })
+        })
       }
-      this.current_orderCollection.doc(id).delete()
-    }*/
+
+      orderDocument.ref.delete()
+
+    })
   }
 
-  removeOrder(){
-    /*if(confirm("Siparişi iptal etmek istediğinize emin misiniz?"))
-      this.current_orderCollection.doc(id).delete()*/
+  async removeOrder(name: string){
+    
+    const orderSnapshot = await this.ordersCollection.ref.where("name", "==", name).get()
+
+    if(orderSnapshot.empty)
+      return
+
+    orderSnapshot.forEach(async orderDocument => {
+
+      orderDocument.ref.delete()
+
+    })
   }
 
 }

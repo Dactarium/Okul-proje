@@ -92,8 +92,8 @@
             <td class="table_item">{{ order.name }}</td>
             <td class="table_item">{{ order.amount }}</td>
             <td class="table_item">
-                <button (click)="menuServed()">Servis edildi</button>
-                <button (click)="removeOrder()">İptal</button>
+                <button (click)="menuServed(order.name)">Servis edildi</button>
+                <button (click)="removeOrder(order.name)">İptal</button>
             </td>
         </tr>
     </table>

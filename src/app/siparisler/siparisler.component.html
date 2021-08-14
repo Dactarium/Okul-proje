@@ -81,7 +81,7 @@
                 <button (click)="routeTo('musteri_siparisler', order.id)">Siparişi Görüntüle</button>
                 <button *ngIf="!order.isNoteEdit" (click)="order.isNoteEdit=true">Not Ekle</button>
                 <button *ngIf="order.isNoteEdit" (click)="editNote(order.id); order.isNoteEdit=false">Notu Kaydet</button>
-                <button (click)="endCustomerOrder(order.id)">İşlemi Bitir</button>
+                <button *ngIf="order.wantsBill"(click)="endCustomerOrder(order.id, order.total)">İşlemi Bitir</button>
             </td>
         </tr>
     </table>
