@@ -17,7 +17,7 @@
       display: flex;
       align-items: center;
       background-color: var(--main_color);
-      color: var(--alt_color);
+      color: var(--text_color);
       font-weight: 300;
     }
   
@@ -43,18 +43,18 @@
       width: 100%;
       background-color: var(--main_color);
       border: none;
-      color: var(--alt_color);
+      color: var(--text_color);
       font-size: 18px;
       font-weight: 450;
     }
 
     .logout_button{
-      margin-right: 50px;
+      margin-right: 25px;
       height: 40px;
-      width: 150px;
-      background-color: var(--bg_color);
+      width: 200px;
+      background-color: var(--button_color);
       border: none;
-      border-radius: 10px;
+      border-radius: 5px;
       color: var(--alt_color);
       font-weight: 550;
     }
@@ -71,40 +71,64 @@
       align-items: center;
     }
   
-    .login_area{
+    .signin_area{
       display: flex;
       margin: 180px auto;
       width: 350px;
       background-color: var(--alt_color);
-      color: var(--main_color);
+      border-radius: 5px;
+      font-weight: 300;
+      flex-direction: column;
+    }
+
+    .signup_area{
+      display: flex;
+      margin: 180px auto;
+      width: 350px;
+      background-color: var(--alt_color);
       border-radius: 5px;
       font-weight: 300;
       flex-direction: column;
     }
   
-    .login_title{
+    .signin_title{
       margin-top: 40px;
       margin-left: 30px;
-      color: var(--main_color);
+      color: var(--text_color);
+      font-weight: 600;
+      font-size: 25px;
+    }
+
+    .signup_title{
+      margin-top: 40px;
+      margin-left: 30px;
+      color: var(--text_color);
       font-weight: 600;
       font-size: 25px;
     }
   
-    .login_subtitle{
+    .signin_subtitle{
       margin-top: 5px;
       margin-left: 30px;
-      color: var(--main_color);
+      color: var(--text_color);
       font-weight: 300;
       font-size: 13px;
     }
   
     label{
       margin-bottom: 5px;
+      color: var(--text_color);
       display: block;
     }
-  
+
     .username_area{
       margin: 30px 30px 0px;
+      display: flex;
+      flex-direction: column;
+    }
+  
+    .mail_area{
+      margin: 20px 30px 0px;
       display: flex;
       flex-direction: column;
     }
@@ -117,32 +141,44 @@
   
     .inputfield{
       border-width: 1px;
-      border-color: var(--main_color);
+      border-color: var(--main_color_50);
       border-radius: 5px;
       background-color: var(--input_bg_color);
       padding: 5px;
-      color: #3c2b1a;
+      color: var(--text_color);
       font-family:Cambria;
       font-size: 16px;
       flex-grow: 1;
     }
   
-    .signIn_button{
-      margin: 40px 30px 0px;
+    .signin_button{
+      margin: 40px 30px 5px;
       height: 40px;
       border-radius: 5px;
       border: none;
-      background-color: var(--main_color);
-      color: white;
+      background-color: var(--button_color);
+      color: var(--button_text_color);
     }
 
-    .signUp_button{
-      margin: 15px 30px 40px;
+    .signup_button{
+      margin: 40px 30px 5px;
       height: 40px;
       border-radius: 5px;
       border: none;
-      background-color: var(--main_color);
-      color: white;
+      background-color: var(--button_color);
+      color: var(--button_text_color);
+    }
+
+    .signin_text{
+      margin: 0px 30px 40px;
+      color: var(--text_color);
+      text-align: right;
+    }
+
+    .signup_text{
+      margin: 0px 30px 40px;
+      color: var(--text_color);
+      text-align: right;
     }
     
   </style>
@@ -154,7 +190,7 @@
       src="../assets/images/Logo.png"
     />
     <span class="title" *ngIf="!isSignedIn">Bi'Sipariş: Sipariş vermenin kolay hali!</span>
-    <span class="title" *ngIf="isSignedIn">#{{ user_code }}</span>  
+    <span class="title" *ngIf="isSignedIn">#{{ access_code }}</span>  
 
     <div class="menu" *ngIf="isSignedIn">
         <button class = "menu_item" routerLink="musteriler">Müşteriler</button>
@@ -168,13 +204,13 @@
   
   <div class="content" *ngIf="!isSignedIn">
   
-    <div id="login_area" class="login_area">
-      <span class="login_title">Giriş Yap</span>
-      <span class="login_subtitle">Bi'Sipariş Sistemine hoşgeldiniz!</span>
+    <div id="signin_area" class="signin_area" *ngIf="hasAccount">
+      <span class="signin_title">Giriş Yap</span>
+      <span class="signin_subtitle">Bi'Sipariş Sistemine hoşgeldiniz!</span>
       
-      <div class="username_area">
-        <label for="username">Email:</label>
-        <input type="text" id="username" class="inputfield" name="username" #input_username required>
+      <div class="mail_area">
+        <label for="mail">Email:</label>
+        <input type="text" id="mail" class="inputfield" name="mail" #input_mail required>
       </div>
     
       <div class="password_area">
@@ -182,9 +218,30 @@
         <input type="password" id="password" class="inputfield" name="password" #input_password minlength="4" required>
       </div>
   
-      <button class="signIn_button" (click)="onSignIn(input_username.value, input_password.value)">Giriş Yap</button>
-      <button class="signUp_button" (click)="onSignUp(input_username.value, input_password.value)">Kayıt Ol</button>
+      <button class="signin_button" (click)="onSignIn(input_mail.value, input_password.value)">Giriş Yap</button>
+      <span class="signup_text" (click)="signUp()">Hesabınız yok mu? <b>Kayıt ol</b></span>
+    </div>
+
+    <div id="signup_area" class="signup_area" *ngIf="!hasAccount">
+      <span class="signup_title">Kayıt ol</span>
+
+      <div class="username_area">
+        <label for="username">Restoran ismi:</label>
+        <input type="text" id="username" class="inputfield" name="username" #input_username required>
+      </div>
+      
+      <div class="mail_area">
+        <label for="mail">Email:</label>
+        <input type="text" id="mail" class="inputfield" name="mail" #input_mail required>
+      </div>
+
+      <div class="password_area">
+        <label for="pass">Şifre:</label>
+        <input type="password" id="password" class="inputfield" name="password" #input_password minlength="4" required>
+      </div>
   
+      <button class="signup_button" (click)="onSignUp(input_username.value, input_mail.value, input_password.value)">Kayıt Ol</button>
+      <span class="signin_text" (click)="signIn()">Hesabınız var mı? <b>Giriş Yap</b></span>
     </div>
   
   </div>

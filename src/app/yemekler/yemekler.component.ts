@@ -1,29 +1,31 @@
 import { Component, OnInit } from '@angular/core';
 import { AngularFireAuth } from '@angular/fire/auth';
-import { AngularFirestore, AngularFirestoreCollection, AngularFirestoreCollectionGroup, AngularFirestoreDocument } from '@angular/fire/firestore';
+import { AngularFirestore, AngularFirestoreCollection, AngularFirestoreCollectionGroup, AngularFirestoreDocument, DocumentReference } from '@angular/fire/firestore';
 import { Observable } from 'rxjs';
 import { AuthService } from '../services/auth.service';
+import { distinctUntilChanged, take } from 'rxjs/operators';
+import { isEqual } from 'lodash';
 
-interface menuType {
+interface Category {
+  id: string
   name: string
 }
 
-interface menu_item {
+interface Menu {
   name: string
-  type: string
   price: number
 }
 
-class menu_item_info {
+class Menu_info {
   name: string
-  type: string
+  category: string
   price: number
   isEdit: boolean = false
 
-  constructor(menu_item: menu_item) {
-    this.name = menu_item.name
-    this.type = menu_item.type
-    this.price = menu_item.price
+  constructor(menu: Menu, category: Category) {
+    this.name = menu.name
+    this.price = menu.price
+    this.category = category.name
   }
 
 }
@@ -34,31 +36,45 @@ class menu_item_info {
   styleUrls: ['./yemekler.component.css']
 })
 export class YemeklerComponent implements OnInit {
-  menuCollection!: AngularFirestoreCollection<menu_item>
-  menuTypeCollection!: AngularFirestoreCollection<menuType>
-  menu: menu_item_info[] = []
-  menu_types: menuType[] = []
+  menuCollection!: AngularFirestoreCollection<Menu>
+  categoryCollection!: AngularFirestoreCollection<Category>
+  menu: Menu_info[] = []
+  categories: Category[] = []
 
   constructor(auth: AuthService, angularFirestore: AngularFirestore) {
     auth.getCurrentUser().then(result => {
-      const userCollection = angularFirestore.collection("users").doc(result?.email?.toLowerCase())
-      this.menuCollection = userCollection.collection("menu")
-      this.menuTypeCollection = userCollection.collection("menu_type")
+      const restaurantCollection = angularFirestore.collection("restaurants").doc(result?.email!)
+      this.categoryCollection = restaurantCollection.collection("menu")
 
-      this.menuCollection.valueChanges().subscribe(datas => {
+      this.categoryCollection.valueChanges().pipe(distinctUntilChanged((prev, curr) => isEqual(prev, curr))).subscribe(categoryDocuments => {
+
+        if(!categoryDocuments)
+          return
+
         this.menu = []
-        for (let data of datas) {
-          this.menu.push(new menu_item_info(data))
-        }
-        this.menu.sort((a, b) => a.type.localeCompare(b.type))
-      })
+        this.categories = []
 
-      this.menuTypeCollection.valueChanges().subscribe(datas => {
-        this.menu_types = []
-        for (let data of datas) {
-          this.menu_types.push(data)
+        for(let categoryDocument of categoryDocuments){
+
+            this.menuCollection = this.categoryCollection.doc(categoryDocument.id).collection("content")
+            
+            this.menuCollection.valueChanges().subscribe(menuDocuments => {
+              
+              for(let menuDocument of menuDocuments){
+                
+                if(!this.menu.find(item => item.name == menuDocument.name))
+                this.menu.push(new Menu_info(menuDocument, categoryDocument))
+                
+              }
+
+            })
+            if(!this.categories.find(item => item.name == categoryDocument.name))
+            this.categories.push(categoryDocument)
         }
-        this.menu_types.sort((a, b) => a.name.localeCompare(b.name))
+        
+        this.menu.sort((a, b) => a.category.localeCompare(b.category))
+        this.categories.sort((a, b) => a.name.localeCompare(b.name))
+        
       })
 
     })
@@ -68,19 +84,23 @@ export class YemeklerComponent implements OnInit {
   }
 
   clearInputs(){
-    (<HTMLInputElement>document.getElementById("addTypeInput")).value = "";
+    (<HTMLInputElement>document.getElementById("addCategoryInput")).value = "";
     (<HTMLInputElement>document.getElementById("addMenuNameInput")).value = "";
     (<HTMLInputElement>document.getElementById("addMenuPriceInput")).value = "";
   }
 
-  async addType() {
-    var input_type = (<HTMLInputElement>document.getElementById("addTypeInput")).value
-    const snapshot = await this.menuTypeCollection.ref.where("name", "==", input_type).get();
+  async addCategory() {
+    var input_category = (<HTMLInputElement>document.getElementById("addCategoryInput")).value
+    const snapshot = await this.categoryCollection.ref.where("name", "==", input_category).get();
     if (snapshot.empty) {
-      if (confirm(input_type + " isimli menü tipini eklemek istiyor musunuz?")) {
-        this.menuTypeCollection.add({
-          name: input_type
+      if (confirm(input_category + " isimli menü Kategoriini eklemek istiyor musunuz?")) {
+        var newCategory: DocumentReference<Category> = this.categoryCollection.doc().ref
+
+        newCategory.set({
+          id:newCategory.id,
+          name: input_category
         })
+        
       }
     }
 
@@ -88,32 +108,44 @@ export class YemeklerComponent implements OnInit {
 
   }
 
-  async removeType() {
-    var id = "type_remove_select"
-    var input_type = (<HTMLSelectElement>document.getElementById(id)).value
+  async removeCategory() {
+    var input_category = (<HTMLSelectElement>document.getElementById("category_remove_select")).value
 
     this.clearInputs()
     
-    if (confirm(input_type + " adlı menü tipini silmek istiyor musunuz?\nBu tipe sahip tüm menüler silinecektir.")) {
-      const searchedMenuType = await this.menuTypeCollection.ref.where("name", "==", input_type).get()
-      if (searchedMenuType.empty) {
+    if (confirm(input_category + " adlı menü Kategoriini silmek istiyor musunuz?\nBu Kategorie sahip tüm menüler silinecektir.")) {
+      const searchedCategory = await this.categoryCollection.ref.where("name", "==", input_category).get()
+     
+      if (searchedCategory.empty) {
         console.error("No matching documents.")
         return
       }
-      searchedMenuType.forEach(doc => {
-        doc.ref.delete();
-        console.log("Menu silme işlemi başarıyla gerçekleşti!")
+
+      searchedCategory.forEach(async categoryDocument => {
+
+        const snapshot = await this.categoryCollection.doc(categoryDocument.id).collection("content").ref.get()
+
+        if(snapshot.empty){
+          this.categoryCollection.doc(categoryDocument.id).delete()
+          console.log("Category silme işlemi başarıyla gerçekleşti!")
+
+          return
+        }
+
+        var count = 0
+        snapshot.forEach(doc => {
+          doc.ref.delete()
+          count++
+        })
+
+        console.warn(count + " adet menü silindi!")
+ 
+        this.categoryCollection.doc(categoryDocument.id).delete()
+        console.log("Category silme işlemi başarıyla gerçekleşti!")
+
+
       })
-      const snapshot = await this.menuCollection.ref.where("type","==",input_type).get()
-      if(snapshot.empty){
-        return
-      }
-      var count = 0
-      snapshot.forEach(doc => {
-        doc.ref.delete()
-        count++
-      })
-      console.warn(count+" adet menü silindi!")
+
     } else {
       console.log("Menu silme işlemi tarafınızca reddedildi!")
     }
@@ -122,65 +154,111 @@ export class YemeklerComponent implements OnInit {
 
   async addMenu() {
     var input_name = (<HTMLInputElement>document.getElementById("addMenuNameInput")).value
-    var input_type = (<HTMLSelectElement>document.getElementById("addMenuSelect")).value
+    var input_category_id = (<HTMLSelectElement>document.getElementById("addMenuCategorySelect")).value
     var input_price_text = (<HTMLInputElement>document.getElementById("addMenuPriceInput")).value
+
     const input_price = parseFloat(input_price_text);
-    if (input_name == "" || input_type == "" || input_price_text == "") {
-      alert("Lütfen tüm alanları doldurunuz")
+
+    if (input_name == "" || input_category_id == "" || input_price_text == "") {
+
+      alert("Lütfen tüm alanları doldurunuz!")
+
+    }else if(isNaN(input_price)){
+      alert("Sayısal değer giriniz!")
+    } else if(input_price < 0){
+
+      alert("Negatif değer giremezsiniz!")
+
     } else {
-      const snapshot = await this.menuCollection.ref.where("name", "==", input_name).get()
-      if (snapshot.empty) {
-        if (confirm(input_name + " isimli menü şu şekilde eklenecek:\n\tTip: " + input_type + "\n\tFiyat: " + input_price + " TL")) {
-          this.menuCollection.add({
+
+      this.categoryCollection.valueChanges().pipe(take(1)).subscribe(async docs => {
+        var isExist :boolean = false
+
+        for(let doc of docs){
+          const snapshot = await this.categoryCollection.doc(doc.id).collection("content").ref.where("name", "==", input_name).get()
+
+          if (!snapshot.empty) {
+            isExist = true
+            alert(input_name + " isimli menü hali hazırda var!")
+            return
+          }
+        }
+
+        if(!isExist){
+
+        var category_name = (await this.categoryCollection.doc(input_category_id).ref.get()).data()?.name
+
+        if (confirm(input_name + " isimli menü şu şekilde eklenecek:\n\tKategori: " + category_name + "\n\tFiyat: " + input_price + " TL")) {
+
+          this.categoryCollection.doc(input_category_id).collection("content").add({
             name: input_name,
-            type: input_type,
             price: input_price
           })
+
         }
-      } else {
-        alert(input_name + " isimli menü hali hazırda var!")
+
       }
+
+      })
+
+      
     }
     
     this.clearInputs()
   }
 
-  async editMenu(menu_item: menu_item) {
-    var id = menu_item.name
-    var input_type = (<HTMLSelectElement>document.getElementById(id + "_type")).value
-    var input_price_text = (<HTMLInputElement>document.getElementById(id + "_price")).value
-
-    console.log((<HTMLSelectElement>document.getElementById(id + "_type")))
+  async editMenu(menu_item: Menu_info) {
+    var input_category = (<HTMLSelectElement>document.getElementById(menu_item.name + "_category")).value
+    var input_price_text = (<HTMLInputElement>document.getElementById(menu_item.name+ "_price")).value
 
     const input_price = parseFloat(input_price_text)
 
-    if (input_type == "" || input_price_text == "") {
+    if (input_price_text == "") {
       alert("Lütfen tüm alanları doldurunuz")
-    } else if (input_type == menu_item.type && input_price == menu_item.price) {
+    } else if (input_category == menu_item.category && input_price == menu_item.price) {
+      console.warn("Nothing changed")
       return
-    } else {
-      const snapshot = await this.menuCollection.ref.where("name", "==", menu_item.name).get();
-      if (snapshot.empty) {
-        console.error("No matching menu.")
-        return
-      } else {
-        if (confirm(menu_item.name + " isimli menü şu şekilde güncellenecek:\n\tTip: " + input_type + "\n\tFiyat: " + input_price + " TL")) {
-          snapshot.forEach(doc => {
-            doc.ref.update({
-              type: input_type,
-              price: input_price
-            })
-          })
-        }
-      }
-    }
+    } else if (input_category != menu_item.category){
 
+      const category_id = this.categories.find(item => item.name == menu_item.category)?.id
+
+      const snapshot = await this.categoryCollection.doc(category_id).collection("content").ref.where("name", "==", menu_item.name).get()
+
+      snapshot.forEach(result => {
+        result.ref.delete()
+      })
+
+      const new_category_id = this.categories.find(item => item.name == input_category)?.id
+
+      this.categoryCollection.doc(new_category_id).collection("content").doc().set({
+        name: menu_item.name,
+        price: input_price
+      })
+
+      this.updateMenuValues()
+
+    }else {
+      const category_id = this.categories.find(item => item.name = input_category)?.id
+
+      const snapshot = await this.categoryCollection.doc(category_id).collection("content").ref.where("name", "==", menu_item.name).get()
+
+      snapshot.forEach(result => {
+        result.ref.update({
+          price: input_price
+        })
+      })
+      
+      this.updateMenuValues()
+    }
    
   }
 
-  async removeMenu(selectedMenu_item: menu_item) {
-    if (confirm(selectedMenu_item.name + " adlı menüyü silmek istiyor musunuz?")) {
-      const searchedMenu = await this.menuCollection.ref.where("name", "==", selectedMenu_item.name).get()
+  async removeMenu(selectedMenu: Menu_info) {
+    if (confirm(selectedMenu.name + " adlı menüyü silmek istiyor musunuz?")) {
+
+      const category_id = this.categories.find(item => item.name == selectedMenu.category)?.id
+
+      const searchedMenu = await this.categoryCollection.doc(category_id).collection("content").ref.where("name", "==", selectedMenu.name).get()
       if (searchedMenu.empty) {
         console.error("No matching menu.")
         return
@@ -189,9 +267,35 @@ export class YemeklerComponent implements OnInit {
         doc.ref.delete();
         console.log("Menu silme işlemi başarıyla gerçekleşti!")
       })
+
+      this.updateMenuValues()
     } else {
       console.log("Menu silme işlemi tarafınızca reddedildi!")
     }
+  }
+
+  private updateMenuValues(){
+    this.menu = []
+
+      for(let category of this.categories){
+
+          this.menuCollection = this.categoryCollection.doc(category.id).collection("content")
+          
+          this.menuCollection.valueChanges().subscribe(menuDocuments => {
+            
+            for(let menuDocument of menuDocuments){
+              
+              if(!this.menu.find(item => item.name == menuDocument.name))
+              this.menu.push(new Menu_info(menuDocument, category))
+              
+            }
+
+          })
+          
+      }
+      
+      this.menu.sort((a, b) => a.category.localeCompare(b.category))
+
   }
 
 }

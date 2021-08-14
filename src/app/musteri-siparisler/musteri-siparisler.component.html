@@ -1,8 +1,8 @@
 <style>
     button {
         background-color: var(--button_color);
-        color: var(--main_color);
-        border-color: var(--main_color);
+        color: var(--button_text_color);
+        border-color: var(--main_color_50);
         border-radius: 5px;
         margin: 5px 10px;
         padding: 10px;
@@ -32,6 +32,10 @@
         font-size: 20px;
     }
 
+    .title {
+        color: var(--text_color);
+    }
+
     .left_line {
         margin-left: 75px;
         margin-right: 5px;
@@ -52,17 +56,18 @@
 
     .table_header_item {
         background-color: var(--main_color);
-        color: var(--alt_color);
+        color: var(--text_color);
         padding: 15px 20px;
         width: 275px;
         font-weight: 300;
         font-size: 18px;
-        border: 2px solid black;
+        border: 1px solid var(--text_color);
 
     }
 
     .table_item {
         background-color: var(--main_color_50);
+        color: var(--text_color);
         padding: 10px 15px;
         font-weight: 300;
         font-size: 18px;
@@ -73,7 +78,7 @@
 
     <div class="title_area" style="margin-top: 50px">
         <hr class="left_line">
-        <span class="title">Yeni Siparişler</span>
+        <span class="title">Güncel Siparişler</span>
         <hr class="right_line">
     </div>
 
@@ -83,19 +88,19 @@
             <th class="table_header_item">Sipariş Adeti</th>
             <th class="table_header_item">İşlemler</th>
         </tr>
-        <tr class="list_item" *ngFor="let order of current_orders">
+        <tr class="list_item" *ngFor="let order of orders">
             <td class="table_item">{{ order.name }}</td>
             <td class="table_item">{{ order.amount }}</td>
             <td class="table_item">
-                <button (click)="menuServed(order.id)">Servis edildi</button>
-                <button (click)="removeCurrentOrder(order.id)">İptal</button>
+                <button (click)="menuServed()">Servis edildi</button>
+                <button (click)="removeOrder()">İptal</button>
             </td>
         </tr>
     </table>
 
     <div class="title_area">
         <hr class="left_line">
-        <span class="title">Siparişler</span>
+        <span class="title">Servis Edilmiş Siparişler</span>
         <hr class="right_line">
     </div>
 
@@ -111,10 +116,10 @@
             <th class="table_header_item">Sipariş Adeti</th>
             <th class="table_header_item">Tutar</th>
         </tr>
-        <tr class="list_item" *ngFor="let order of orders">
+        <tr class="list_item" *ngFor="let order of bill">
             <td class="table_item">{{ order.name }}</td>
             <td class="table_item">{{ order.amount }}</td>
-            <td class="table_item">{{ order.total_price }} TL</td>
+            <td class="table_item">{{ order.total }} TL</td>
         </tr>
     </table>
 

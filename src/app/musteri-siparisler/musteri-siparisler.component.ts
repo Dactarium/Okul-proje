@@ -4,28 +4,22 @@ import { AngularFirestore, AngularFirestoreCollection, AngularFirestoreCollectio
 import { ActivatedRoute, Params } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 
-interface menu {
+interface Order {
   name: string
-  type: string
   price: number
-}
-
-interface current_order {
-  id: string
-  menu_ref: DocumentReference<menu>
   amount: number
 }
 
-interface order {
-  menu_ref: DocumentReference<menu>
-  amount: number
-}
-
-interface order_info {
-  id:  string
+class Order_info {
   name: string
   amount: number
-  total_price: number
+  total: number
+
+  constructor(name: string, amount: number, total: number){
+    this.name = name
+    this.amount = amount
+    this.total = total
+  }
 }
 
 @Component({
@@ -34,35 +28,33 @@ interface order_info {
   styleUrls: ['./musteri-siparisler.component.css']
 })
 export class MusteriSiparislerComponent implements OnInit {
-  ordersCollection!: AngularFirestoreCollection
-  current_orderCollection!: AngularFirestoreCollection<current_order>
-  orderCollection!: AngularFirestoreCollection<order>
+  billCollection!: AngularFirestoreCollection<Order>
+  ordersCollection!: AngularFirestoreCollection<Order>
   customer_id!: string
   total: number = 0
-  current_orders: order_info[] = []
-  orders: order_info[] = []
+  bill: Order_info[] = []
+  orders: Order_info[] = []
 
   constructor(private router: ActivatedRoute, auth: AuthService, angularFirestore: AngularFirestore) {
     this.router.params.subscribe((params: Params) => { this.customer_id = params['id'] });
     auth.getCurrentUser().then(result => {
-      this.ordersCollection = angularFirestore.collection("users").doc(result?.email?.toLowerCase()).collection("orders")
 
-      this.current_orderCollection = this.ordersCollection.doc(this.customer_id).collection("current_order")
-      this.current_orderCollection.valueChanges().subscribe(async current_order_array => {
-        var tmp_current_orders: order_info[] = []
-        for (let current_order of current_order_array) {
-          const menu_ref = await current_order.menu_ref.get()
-          if (!menu_ref.exists) {
-            console.log('No menu ref')
-          } else {
-            const order_info: order_info = {id: current_order.id, name: menu_ref.data()?.name!, amount: current_order.amount, total_price: 0}
-            tmp_current_orders.push(order_info)
-          }
-        }
-        this.current_orders = tmp_current_orders
+      this.ordersCollection = angularFirestore.collection("restaurants").doc(result?.email!).collection("customers").doc(this.customer_id).collection("orders")
+      this.billCollection = angularFirestore.collection("restaurants").doc(result?.email!).collection("customers").doc(this.customer_id).collection("bill")
+
+      this.ordersCollection.valueChanges().subscribe( orderDocuments => {
+       let tmp_orders: Order_info[] = []
+
+       for(let orderDocument of orderDocuments){
+        let total: number = orderDocument.amount * orderDocument.price
+        tmp_orders.push(new Order_info(orderDocument.name, orderDocument.amount, total))
+       }
+
+       this.orders = tmp_orders
       })
+      
 
-      this.orderCollection = this.ordersCollection.doc(this.customer_id).collection("order")
+      /*
       this.orderCollection.valueChanges().subscribe(async order_array => {
         var tmp_orders: order_info[] = []
         var tmp_total: number = 0
@@ -79,7 +71,7 @@ export class MusteriSiparislerComponent implements OnInit {
         }
         this.orders = tmp_orders
         this.total = tmp_total
-      })
+      })*/
     })
 
   }
@@ -89,8 +81,8 @@ export class MusteriSiparislerComponent implements OnInit {
 
   }
 
-  async menuServed(id: string){
-    const current_order_ref = this.current_orderCollection.doc(id).ref
+  async menuServed(){
+    /*const current_order_ref = this.current_orderCollection.doc(id).ref
     const newOrder = await current_order_ref.get()
     if(!newOrder.exists)
       console.log('No Current Order Document')
@@ -102,12 +94,12 @@ export class MusteriSiparislerComponent implements OnInit {
         orderSnapshot.forEach(doc => this.orderCollection.doc(doc.id).update({amount: (doc.data().amount + newOrder.data()?.amount!)}))
       }
       this.current_orderCollection.doc(id).delete()
-    }
+    }*/
   }
 
-  removeCurrentOrder(id: string){
-    if(confirm("Siparişi iptal etmek istediğinize emin misiniz?"))
-      this.current_orderCollection.doc(id).delete()
+  removeOrder(){
+    /*if(confirm("Siparişi iptal etmek istediğinize emin misiniz?"))
+      this.current_orderCollection.doc(id).delete()*/
   }
 
 }

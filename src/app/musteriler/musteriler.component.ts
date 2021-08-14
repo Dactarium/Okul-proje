@@ -5,11 +5,12 @@ import { Observable } from 'rxjs';
 import { AuthService } from '../services/auth.service';
 
 interface customer {
-  id: string;
-  name: string;
-  order_code: string;
-  status: string;
-  isAllowed: boolean;
+  id: string
+  name: string
+  order_code: string
+  status: string
+  isAllowed: boolean
+  wantsBill: boolean
 }
 
 @Component({
@@ -25,7 +26,7 @@ export class MusterilerComponent implements OnInit {
 
   constructor(auth: AuthService, angularFirestore: AngularFirestore) {
     auth.getCurrentUser().then(result => {
-      this.customerCollection = angularFirestore.collection("users").doc(result?.email?.toLowerCase()).collection("customers")
+      this.customerCollection = angularFirestore.collection("restaurants").doc(result?.email!).collection("customers")
       this.customers_data = this.customerCollection.valueChanges()
       this.customers_data.subscribe(datas => {
         this.customers = []
@@ -48,10 +49,7 @@ export class MusterilerComponent implements OnInit {
         return
       }
       searchedCustomer.forEach(doc => {
-        doc.ref.set({
-          id: selectedCustomer.id,
-          name: selectedCustomer.name,
-          order_code: selectedCustomer.order_code,
+        doc.ref.update({
           status: "Aktif",
           isAllowed: true
         })

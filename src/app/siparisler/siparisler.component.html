@@ -1,8 +1,8 @@
 <style>
     button {
         background-color: var(--button_color);
-        color: var(--main_color);
-        border-color: var(--main_color);
+        color: var(--button_text_color);
+        border-color: var(--main_color_50);
         border-radius: 5px;
         margin: 5px 10px;
         padding: 10px;
@@ -16,7 +16,7 @@
         background-color: var(--input_bg_color);
         margin-right: 25px;
         padding: 10px;
-        color: #3c2b1a;
+        color: var(--text_color);
         font-family: Cambria;
         font-size: 16px;
         flex-grow: 1;
@@ -37,17 +37,18 @@
 
     .table_header_item {
         background-color: var(--main_color);
-        color: var(--alt_color);
+        color: var(--text_color);
         padding: 15px 20px;
         width: 275px;
         font-weight: 300;
         font-size: 18px;
-        border: 2px solid black;
+        border: 1px solid var(--text_color);
 
     }
 
     .table_item {
         background-color: var(--main_color_50);
+        color: var(--text_color);
         padding: 10px 15px;
         font-weight: 300;
         font-size: 18px;
@@ -58,15 +59,17 @@
 <div class="content">
     <table class="customer_table">
         <tr class=table_header>
+            <th class="table_header_item" style="width: 100px;">Sipariş Kodu</th>
             <th class="table_header_item">Müşteri</th>
             <th class="table_header_item">Durum</th>
             <th class="table_header_item">Not</th>
-            <th class="table_header_item">Toplam tutar</th>
-            <th class="table_header_item" style="width: auto;">İşlemler</th>
+            <th class="table_header_item" style="width: 100px;">Toplam tutar</th>
+            <th class="table_header_item" style= "width: auto;">İşlemler</th>
         </tr>
         <tr class="list_item" *ngFor="let order of orders">
-            <td class="table_item">{{ order.customer_name }}</td>
-            <td class="table_item">{{ order.customer_status }}</td>
+            <td class="table_item">{{ order.order_code }}</td>
+            <td class="table_item">{{ order.name }}</td>
+            <td class="table_item">{{ order.status }}</td>
             <td class="table_item">
                 <span *ngIf="!order.isNoteEdit">{{ order.note }}</span>
                 <span *ngIf="order.isNoteEdit">

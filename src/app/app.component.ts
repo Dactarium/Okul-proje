@@ -7,7 +7,7 @@ import { Router } from '@angular/router';
 import { AuthService } from './services/auth.service';
 
 interface user {
-  user_code: string
+  access_code: string
 }
 
 
@@ -19,20 +19,30 @@ interface user {
 
 export class AppComponent implements OnInit {
   title = 'Bi\'Sipariş'
-  user_code = ""
+  access_code = ""
   isSignedIn = false
+  hasAccount = true
   firebaseErrorMsg = "-"
 
   constructor(public router: Router, private authService: AuthService, public angularFireAuth: AngularFireAuth, public angularFirestore: AngularFirestore) {
   }
 
   ngOnInit() {
-    if (localStorage.getItem('user') !== null) {
+    if (localStorage.getItem('restaurant') !== null) {
       console.warn("oninit")
       this.signedIn(false)
     }
     else
       this.isSignedIn = false
+      this.hasAccount = true
+  }
+
+  signUp(){
+    this.hasAccount = false
+  }
+
+  signIn(){
+    this.hasAccount = true
   }
 
   async onSignIn(email: string, password: string) {
@@ -46,8 +56,8 @@ export class AppComponent implements OnInit {
     })
   }
 
-  async onSignUp(email: string, password: string) {
-    const result = await this.authService.signupUser(email, password)
+  async onSignUp(restaurant_name: string, email: string, password: string) {
+    const result = await this.authService.signupUser(restaurant_name, email, password)
     if (result.isValid) {
       console.warn("onsignup")
       this.signedIn(true)
@@ -58,20 +68,20 @@ export class AppComponent implements OnInit {
 
   logout() {
     this.angularFireAuth.signOut()
-    localStorage.removeItem('user')
+    localStorage.removeItem('restaurant')
     this.router.navigate([''])
     this.isSignedIn = false;
   }
 
   async signedIn(reloadPage: boolean) {
     this.isSignedIn = true
-    const user = JSON.parse(localStorage.getItem('user')!)
-    const user_ref: DocumentReference<user> = (<DocumentReference<user>>this.angularFirestore.collection("users").doc(user["email"].toLowerCase()).ref)
+    const user = JSON.parse(localStorage.getItem('restaurant')!)
+    const user_ref: DocumentReference<user> = (<DocumentReference<user>>this.angularFirestore.collection("restaurants").doc(user["email"].toLowerCase()).ref)
     const user_data = await user_ref.get()
     if (!user_data.exists)
       console.log("No user document!")
     else {
-      this.user_code = user_data.data()?.user_code!
+      this.access_code = user_data.data()?.access_code.toUpperCase()!
     }
     this.router.navigate(['musteriler'])
     if (reloadPage)

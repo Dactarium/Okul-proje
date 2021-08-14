@@ -3,49 +3,52 @@ import { Component, OnInit } from '@angular/core';
 import { AngularFirestore, AngularFirestoreCollection, AngularFirestoreDocument, AngularFirestoreModule, CollectionReference, DocumentReference, QuerySnapshot } from '@angular/fire/firestore';
 import { Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
-import { distinctUntilChanged, first } from 'rxjs/operators';
+import { distinctUntilChanged, pairwise, take } from 'rxjs/operators';
 import { isEqual } from 'lodash';
 
-interface menu {
+interface order{
+  id: string
   name: string
-  type: string
   price: number
-}
-
-interface customer_order {
-  menu_ref: DocumentReference<menu>
   amount: number
 }
 
+
 interface customer {
+  id: string;
   name: string;
   order_code: string;
   status: string;
+  note: string;
   isAllowed: boolean;
-}
 
-interface order {
-  id: string
-  customer: DocumentReference<customer>
-  note: string
+  orders: AngularFirestoreCollection<order>;
+  bill: AngularFirestoreCollection<order>;
 }
 
 class order_info {
   id: string
-  customer_name: string
-  customer_status: string
+  name: string
+  order_code: string
+  status: string
   note: string
   total: number
   hasCurrentOrder: boolean
   isNoteEdit: boolean = false
 
-  constructor(id: string, customer_name: string, customer_status: string, note: string, total: number, hasCurrentOrder: boolean) {
+  constructor(id: string, name: string, order_code: string, status: string, note: string, total: number, hasCurrentOrder: boolean) {
     this.id = id
-    this.customer_name = customer_name
-    this.customer_status = customer_status
+    this.name = name
+    this.order_code = order_code
+    this.status = status
     this.note = note
     this.total = total
     this.hasCurrentOrder = hasCurrentOrder
+  }
+
+  setTotal(total: number){
+    this.total = total
+    return this.total
   }
 }
 
@@ -55,56 +58,64 @@ class order_info {
   styleUrls: ['./siparisler.component.css']
 })
 export class SiparislerComponent implements OnInit {
-  ordersCollection!: AngularFirestoreCollection<order>
   orders: order_info[] = []
+  customerCollection!: AngularFirestoreCollection<customer>
 
   constructor(public router: Router, auth: AuthService, angularFirestore: AngularFirestore) {
     auth.getCurrentUser().then(async result => {
-      const userCollection = angularFirestore.collection("users").doc(result?.email?.toLowerCase())
-      this.ordersCollection = userCollection.collection("orders")
+      this.customerCollection = angularFirestore.collection("restaurants").doc(result?.email!).collection("customers")
 
-      this.ordersCollection.valueChanges().pipe(distinctUntilChanged((prev, curr) => isEqual(prev, curr))).subscribe(async docs => {
-        if (!docs)
+      this.customerCollection.valueChanges().pipe(distinctUntilChanged((prev, curr) => isEqual(prev, curr))).subscribe(customerDocuments => {
+
+        if(!customerDocuments)
           return;
+
         var tmp_orders: order_info[] = []
-        for (let doc of docs) {
-          var customer_name: string = ""
-          var customer_status: string = ""
-          var hasCurrentOrder: boolean = false
-          var note = doc.note
-          var total: number = 0
+        
 
-          const customer_data = await doc.customer.get()
-          if (!customer_data.exists) {
-            console.log('No customer data');
-          } else {
-            customer_name = customer_data.data()?.name!
-            customer_status = customer_data.data()?.status!
-          }
+        for(let customerDocument of customerDocuments){
+          if(customerDocument.isAllowed){
+            let customer_id = customerDocument.id
+            let customer_name = customerDocument.name
+            let customer_order_code = customerDocument.order_code
+            let customer_status = customerDocument.status
+            let hasCurrentOrder = false
+            let note = customerDocument.note
+            let total = 0
+            
+            tmp_orders.push(new order_info(customer_id, customer_name, customer_order_code, customer_status, note, total, hasCurrentOrder))
 
-          const customerOrderColletion: AngularFirestoreCollection<customer_order> = this.ordersCollection.doc(doc.id).collection("order")
-          customerOrderColletion.valueChanges().subscribe(async customer_order_datas => {
-            total = 0
-            for (let customer_order_data of customer_order_datas) {
-              const menu_ref = await customer_order_data.menu_ref.get()
-              if (!menu_ref.exists) {
-                console.log('No menu ref');
-              } else {
-                var subtotal: number = (menu_ref.data()?.price! * customer_order_data.amount)
-                total = total + subtotal
+            this.customerCollection.doc(customerDocument.id).collection("orders").valueChanges().subscribe(customerOrderDocuments => {
+              
+              if(customerOrderDocuments.length > 0){
+                hasCurrentOrder = true
+                this.customerCollection.doc(customerDocument.id).update({status: "Yeni Siparişi var!"})
+                return
+              }else{
+                this.customerCollection.doc(customerDocument.id).update({status: "Aktif"})
               }
-            }
-            const order_total = this.orders.find(item => item.id == doc.id)
-            if (order_total) order_total.total = total
-          })
 
-          const customerCurrentOrderColletion: AngularFirestoreCollection<customer_order> = this.ordersCollection.doc(doc.id).collection("current_order")
-          customerCurrentOrderColletion.valueChanges().subscribe(customer_current_order_datas => {
-            if (customer_current_order_datas)
-              hasCurrentOrder = true
-          })
+            })
 
-          tmp_orders.push(new order_info(doc.id, customer_name, customer_status, note, total, true))
+            this.customerCollection.doc(customer_id).collection("bill").valueChanges().pipe(distinctUntilChanged((prev, curr) => isEqual(prev, curr))).subscribe(customerBillDocuments => {
+              
+              total = 0
+
+              for(let customerBillDocument of customerBillDocuments){
+                const _amount = customerBillDocument.amount
+                const _price = customerBillDocument.price
+                total += _amount * _price
+              }
+
+              this.orders.find(item => {
+                if(item.id == customer_id){
+                  item.setTotal(total)
+                }
+              })
+
+            })
+
+          }
         }
         this.orders = tmp_orders
       })
@@ -117,20 +128,22 @@ export class SiparislerComponent implements OnInit {
   }
 
   async editNote(id: string) {
-    await this.ordersCollection.doc(id).update({
+   await this.customerCollection.doc(id).update({
       note: (<HTMLInputElement>document.getElementById(id)).value
     })
   }
 
   endCustomerOrder(id: string){
     if(confirm("Müşterinin işlemini bitirmek istediğinize emin misiniz?"))
-      this.ordersCollection.doc(id).delete()
+
+    // delete all below documents
+      
+      this.customerCollection.doc(id).delete()
   }
 
   routeTo(path: string, id: string) {
     this.router.navigate([path, id])
   }
-
 
 
 

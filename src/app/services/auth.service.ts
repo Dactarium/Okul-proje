@@ -28,7 +28,7 @@ export class AuthService {
         return this.angularFireAuth.signInWithEmailAndPassword(email, password)
             .then(result => {
                 console.log('Auth Service: loginUser: success');
-                localStorage.setItem('user', JSON.stringify(result.user))
+                localStorage.setItem('restaurant', JSON.stringify(result.user))
             })
             .catch(error => {
                 console.log('Auth Service: login error...');
@@ -41,19 +41,17 @@ export class AuthService {
             });
     }
 
-    async signupUser(email: string, password: string) {
+    async signupUser(restaurant_name: string, mail: string, password: string) {
         try {
-            const result = await this.angularFireAuth.createUserWithEmailAndPassword(email, password)
-            let emailLower = email.toLowerCase();
-            var user_code: string = await this.generateUserCode(email)
-            await this.angularFirestore.collection("users").doc(emailLower).set({
-                accountType: 'manager',
-                uid: result.user?.uid,
-                user_code,
-                email,
-                emailLower
+            const result = await this.angularFireAuth.createUserWithEmailAndPassword(mail, password)
+            var access_code: string = await this.generateAccessCode(mail)
+            access_code = access_code.toUpperCase()
+            await this.angularFirestore.collection("restaurants").doc(mail).set({
+                access_code,
+                mail,
+                restaurant_name
             })
-            localStorage.setItem('user', JSON.stringify(result.user))
+            localStorage.setItem('restaurant', JSON.stringify(result.user))
             return { isValid: true} 
         } catch (error) {
             console.log('Auth Service: signup error', error);
@@ -66,7 +64,7 @@ export class AuthService {
         return this.angularFireAuth.signOut()
             .then(() => {
                 this.router.navigate(['']);
-                localStorage.removeItem('user')
+                localStorage.removeItem('restaurant')
             })
             .catch(error => {
                 console.log('Auth Service: logout error...');
@@ -78,7 +76,7 @@ export class AuthService {
 
     setUserInfo(payload: object) {
         console.log('Auth Service: saving user info...');
-        this.angularFirestore.collection('users')
+        this.angularFirestore.collection('restaurants')
             .add(payload).then(function (res) {
                 console.log("Auth Service: setUserInfo response...")
                 console.log(res);
@@ -89,21 +87,21 @@ export class AuthService {
         return this.angularFireAuth.currentUser;
     }
 
-    async generateUserCode(email: string): Promise<string> {
-        console.log("Generating user code...")
-        var user_code: string = ""
-        user_code += email.substring(0, email.lastIndexOf("@"))
-        if (user_code.length < 3)
-            user_code = (user_code + "aa").substring(0, 3)
+    async generateAccessCode(email: string): Promise<string> {
+        console.log("Generating access code...")
+        var access_code: string = ""
+        access_code += email.substring(0, email.lastIndexOf("@"))
+        if (access_code.length < 3)
+            access_code = (access_code + "aa").substring(0, 3)
         else
-            user_code = user_code.substring(0, 3)
-        user_code += this.getDayOfYear().toString(20)
+            access_code = access_code.substring(0, 3)
+        access_code += this.getDayOfYear().toString(20)
 
-        const result = await this.checkUserCodeExists(user_code)
-        user_code = result
-        console.log("Generated user code: ", user_code)
+        const result = await this.checkAccessCodeExists(access_code)
+        access_code = result
+        console.log("Generated access code: ", access_code)
 
-        return user_code
+        return access_code
     }
 
     getDayOfYear(): number {
@@ -113,16 +111,16 @@ export class AuthService {
         return days
     }
 
-    async checkUserCodeExists(user_code: string, count: number = -1): Promise<string> {
-        var checkUserCode: string = user_code
-        console.log(user_code, " ", count)
+    async checkAccessCodeExists(access_code: string, count: number = -1): Promise<string> {
+        var checkAccessCode: string = access_code
+        console.log(access_code, " ", count)
         if (count != -1)
-            checkUserCode = user_code + count
-        const userCheck = await this.angularFirestore.collection("users").ref.where("user_code", "==", checkUserCode).get()
+            checkAccessCode = access_code + count
+        const userCheck = await this.angularFirestore.collection("restaurants").ref.where("access_code", "==", checkAccessCode).get()
         if (userCheck.empty) {
-            return checkUserCode
+            return checkAccessCode
         }
-        return this.checkUserCodeExists(user_code, count + 1)
+        return this.checkAccessCodeExists(access_code, count + 1)
     }
 
 }

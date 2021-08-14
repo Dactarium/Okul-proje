@@ -1,8 +1,8 @@
 <style>
     button {
         background-color: var(--button_color);
-        color: var(--main_color);
-        border-color: var(--main_color);
+        color: var(--button_text_color);
+        border-color: var(--main_color_50);
         border-radius: 5px;
         min-width: 75px;
         margin: 0 25px 0 0;
@@ -20,7 +20,7 @@
         background-color: var(--input_bg_color);
         margin-right: 25px;
         padding: 10px;
-        color: #3c2b1a;
+        color: var(--text_color);
         font-family: Cambria;
         font-size: 16px;
     }
@@ -35,7 +35,7 @@
         background-color: var(--input_bg_color);
         margin-right: 25px;
         padding: 10px;
-        color: #3c2b1a;
+        color: var(--text_color);
         font-family: Cambria;
         font-size: 16px;
         flex-grow: 1;
@@ -64,6 +64,10 @@
         font-weight: 600;
         font-size: 20px;
     }
+    
+    .title {
+        color: var(--text_color);
+    }
 
     .left_line {
         margin-left: 75px;
@@ -87,6 +91,7 @@
         font-weight: 450;
         font-family: Cambria;
         margin-right: 15px;
+        color: var(--text_color);
     }
 
     .menu_table {
@@ -97,16 +102,18 @@
 
     .table_header_item {
         background-color: var(--main_color);
-        color: var(--alt_color);
+        color: var(--text_color);
         padding: 15px 20px;
         width: 275px;
         font-weight: 300;
         font-size: 18px;
-        border: 2px solid black;
+        border: 1px solid var(--text_color);
+
     }
 
     .table_item {
         background-color: var(--main_color_50);
+        color: var(--text_color);
         padding: 10px 15px;
         font-weight: 300;
         font-size: 18px;
@@ -118,18 +125,18 @@
 
     <div class="title_area" style="margin-top: 50px">
         <hr class="left_line">
-        <span class="title">Tip Ekle / Sil </span>
+        <span class="title">Kategori Ekle / Sil </span>
         <hr class="right_line">
     </div>
 
     <div class="update_area">
-        <span class="update_input_title">Tip:</span>
-        <input id="addTypeInput"type="text" name="type" required>
-        <button (click)="addType()">Ekle</button>
-        <select id="type_remove_select">
-            <option *ngFor="let type of menu_types" [value]="type.name">{{ type.name }}</option>
+        <span class="update_input_title">Kategori:</span>
+        <input id="addCategoryInput" type="text" name="category" required>
+        <button (click)="addCategory()">Ekle</button>
+        <select id="category_remove_select">
+            <option *ngFor="let category of categories" [value]="category.name">{{ category.name }}</option>
         </select>
-        <button (click)="removeType()">Sil</button>
+        <button (click)="removeCategory()">Sil</button>
     </div>
 
     <div class="title_area">
@@ -141,12 +148,12 @@
     <div class="update_area">
         <span class="update_input_title">Menü İsmi:</span>
         <input id="addMenuNameInput" type="text" name="name" required>
-        <span class="update_input_title">Tip:</span>
-        <select id="addMenuSelect">
-            <option *ngFor="let type of menu_types" [value]="type.name">{{ type.name }}</option>
+        <span class="update_input_title">Kategori:</span>
+        <select id="addMenuCategorySelect">
+            <option *ngFor="let category of categories" [value]="category.id">{{ category.name }}</option>
         </select>
         <span class="update_input_title">Fiyat:</span>
-        <input id="addMenuPriceInput"type="number" name="price" step="0.01" #price required>
+        <input id="addMenuPriceInput" type="number" name="price" step="0.01" #price required>
         <button (click)="addMenu()">Ekle</button>
     </div>
 
@@ -159,16 +166,16 @@
     <table class="menu_table">
         <tr class=table_header>
             <th class="table_header_item" style="width: auto;">İsim</th>
-            <th class="table_header_item">Tip</th>
+            <th class="table_header_item">Kategori</th>
             <th class="table_header_item">Fiyat</th>
             <th class="table_header_item">İşlem</th>
         </tr>
         <tr class="list_item" *ngFor="let menu_item of menu">
             <td class="table_item">{{ menu_item.name }}</td>
             <td class="table_item">
-                <span *ngIf="!menu_item.isEdit">{{ menu_item.type }}</span>
-                <select [id]='menu_item.name + "_type"' *ngIf="menu_item.isEdit">
-                    <option *ngFor="let type of menu_types" [value]="type.name" [selected]="menu_item.type == type.name">{{ type.name }}</option>
+                <span *ngIf="!menu_item.isEdit">{{ menu_item.category }}</span>
+                <select [id]='menu_item.name + "_category"' *ngIf="menu_item.isEdit">
+                    <option *ngFor="let category of categories" [value]="category.name" [selected]="menu_item.category == category.name">{{ category.name }}</option>
                 </select>
             </td>
             <td class="table_item">
